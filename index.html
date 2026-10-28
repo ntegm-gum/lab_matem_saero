@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratório H24 SAERO & Gerador de Atividades</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .nav-btn-active {
+            background-color: #ffffff !important;
+            color: #1e1b4b !important;
+            font-weight: bold !important;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-amber-400 text-indigo-950 p-2 rounded-lg font-black text-xl">
+                    SAERO
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Laboratório de Matemática — H24</h1>
+                    <p class="text-xs text-indigo-200">Função Quadrática & Equações do 2º Grau</p>
+                </div>
+            </div>
+
+            <!-- Navegação de Abas -->
+            <nav class="flex space-x-1 mt-2 sm:mt-0 bg-indigo-950 p-1 rounded-lg">
+                <button type="button" onclick="switchTab('simulador')" id="tab-simulador" class="px-4 py-2 rounded-md text-sm font-medium transition nav-btn-active">
+                    <i class="fa-solid fa-chart-line mr-2"></i>Simulador
+                </button>
+                <button type="button" onclick="switchTab('quiz')" id="tab-quiz" class="px-4 py-2 rounded-md text-sm font-medium transition text-indigo-200 hover:text-white">
+                    <i class="fa-solid fa-gamepad mr-2"></i>Quiz H24
+                </button>
+                <button type="button" onclick="switchTab('professor')" id="tab-professor" class="px-4 py-2 rounded-md text-sm font-medium transition text-indigo-200 hover:text-white border border-indigo-700">
+                    <i class="fa-solid fa-sliders mr-2"></i>⚙️ Painel do Professor
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- ABA 1: SIMULADOR INTERATIVO -->
+        <section id="sec-simulador" class="block space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-2">Simulador de Trajetória e Lucro Parabólico</h2>
+                <p class="text-slate-600 text-sm mb-4">Ajuste os coeficientes da equação $f(x) = ax^2 + bx + c$ para observar o comportamento do gráfico e os pontos notáveis do vértice.</p>
+
+                <!-- Presets Contextualizados -->
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <span class="text-xs font-semibold text-slate-500 self-center uppercase">Cenários Regionais:</span>
+                    <button type="button" onclick="loadPreset(-5, 20, 1)" class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full hover:bg-amber-200 transition">
+                        🌴 Açaí (Lançador Parabólico)
+                    </button>
+                    <button type="button" onclick="loadPreset(-2, 32, -78)" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full hover:bg-emerald-200 transition">
+                        🐟 Tambaqui (Otimização de Lucro)
+                    </button>
+                    <button type="button" onclick="loadPreset(-1, 6, 0)" class="px-3 py-1 bg-sky-100 text-sky-800 text-xs font-semibold rounded-full hover:bg-sky-200 transition">
+                        🌉 Ponte (Estrutura Parabólica)
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Painel de Controles Sliders -->
+                    <div class="bg-slate-50 p-5 rounded-lg border border-slate-200 space-y-4">
+                        <div class="border-b border-slate-200 pb-2">
+                            <span class="text-xs font-bold text-indigo-600 block">EQUAÇÃO ATUAL</span>
+                            <span id="eq-display" class="font-mono text-lg font-bold text-slate-800">f(x) = -5x² + 20x + 1</span>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <label for="slider-a" class="font-semibold text-slate-700">Coeficiente a (Curvatura):</label>
+                                <span id="val-a" class="font-mono font-bold text-indigo-600">-5</span>
+                            </div>
+                            <input type="range" id="slider-a" min="-10" max="10" step="0.5" value="-5" oninput="updateChart()" class="w-full accent-indigo-600">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <label for="slider-b" class="font-semibold text-slate-700">Coeficiente b (Inclinação):</label>
+                                <span id="val-b" class="font-mono font-bold text-indigo-600">20</span>
+                            </div>
+                            <input type="range" id="slider-b" min="-40" max="40" step="1" value="20" oninput="updateChart()" class="w-full accent-indigo-600">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <label for="slider-c" class="font-semibold text-slate-700">Coeficiente c (Altura/Termo ind.):</label>
+                                <span id="val-c" class="font-mono font-bold text-indigo-600">1</span>
+                            </div>
+                            <input type="range" id="slider-c" min="-100" max="100" step="1" value="1" oninput="updateChart()" class="w-full accent-indigo-600">
+                        </div>
+
+                        <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 space-y-2 mt-4">
+                            <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider">Pontos Notáveis da Parábola</h3>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-600">Vértice X ($X_v$):</span>
+                                <span id="out-xv" class="font-mono font-bold text-indigo-700">2,00</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-600">Vértice Y / Máximo ($Y_v$):</span>
+                                <span id="out-yv" class="font-mono font-bold text-indigo-700">21,00</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-600">Discriminante ($\Delta$):</span>
+                                <span id="out-delta" class="font-mono font-bold text-indigo-700">420,00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Canvas do Gráfico -->
+                    <div class="lg:col-span-2 bg-white p-4 rounded-lg border border-slate-200 flex flex-col justify-center min-h-[350px]">
+                        <canvas id="parabolaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 2: QUIZ GAMIFICADO H24 -->
+        <section id="sec-quiz" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex flex-wrap justify-between items-center pb-4 mb-4 border-b border-slate-200">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Desafio H24 SAERO — Questões Contextualizadas</h2>
+                        <p class="text-xs text-slate-500">Responda às questões com base no modelo quadrático.</p>
+                    </div>
+                    <div class="flex items-center space-x-4 mt-2 sm:mt-0">
+                        <div class="bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-lg text-center">
+                            <span class="text-xs text-indigo-600 block font-semibold">PONTUAÇÃO</span>
+                            <span id="quiz-score" class="text-lg font-bold text-indigo-900">0 pts</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="question-card" class="space-y-6">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 3: PAINEL DO PROFESSOR (CRIADOR DE ATIVIDADES) -->
+        <section id="sec-professor" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="border-b border-slate-200 pb-4 mb-6">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center">
+                        <i class="fa-solid fa-pen-to-square text-indigo-600 mr-2"></i>Painel do Criador de Atividades H24
+                    </h2>
+                    <p class="text-slate-600 text-sm mt-1">
+                        Crie e personalize novas questões de Matemática para a matriz SAERO. Insira os coeficientes e enunciados para testar e exportar atividades.
+                    </p>
+                </div>
+
+                <form id="form-professor" onsubmit="salvarQuestaoProfessor(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wide border-b border-indigo-100 pb-1">1. Contexto & Identificação</h3>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Título / Contexto Regional</label>
+                                <input type="text" id="prof-contexto" required placeholder="Ex: Produção de Leite em Ariquemes" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Texto de Contextualização (Enunciado)</label>
+                                <textarea id="prof-enunciado" rows="3" required placeholder="Descreva a situação-problema prática que gera a função quadrática..." class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Coef. a</label>
+                                    <input type="number" step="any" id="prof-a" required value="-5" oninput="calcularCalculadoraPedagogica()" class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Coef. b</label>
+                                    <input type="number" step="any" id="prof-b" required value="20" oninput="calcularCalculadoraPedagogica()" class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Coef. c</label>
+                                    <input type="number" step="any" id="prof-c" required value="1" oninput="calcularCalculadoraPedagogica()" class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono">
+                                </div>
+                            </div>
+
+                            <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg text-xs space-y-1">
+                                <span class="font-bold text-amber-900 block"><i class="fa-solid fa-calculator mr-1"></i>Apoio ao Professor (Valores Notáveis)</span>
+                                <div class="flex justify-between text-amber-800">
+                                    <span>Vértice Xv:</span>
+                                    <span id="prof-calc-xv" class="font-mono font-bold">2.00</span>
+                                </div>
+                                <div class="flex justify-between text-amber-800">
+                                    <span>Vértice Yv (Máximo/Mínimo):</span>
+                                    <span id="prof-calc-yv" class="font-mono font-bold">21.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wide border-b border-indigo-100 pb-1">2. Pergunta e Opções de Resposta</h3>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Pergunta Específica</label>
+                                <input type="text" id="prof-pergunta" required placeholder="Ex: Qual o valor máximo do lucro em reais?" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-xs font-semibold text-slate-700">Alternativas (Selecione a opção CORRETA):</label>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <input type="radio" name="prof-correta" value="0" checked class="w-4 h-4 text-indigo-600">
+                                    <span class="text-xs font-bold text-slate-500 w-4">A)</span>
+                                    <input type="text" id="prof-alt-0" required placeholder="Opção A (Correta)" class="flex-grow p-2 border border-slate-300 rounded-lg text-sm">
+                                </div>
+
+                                <div class="flex items-center space-x-2">
+                                    <input type="radio" name="prof-correta" value="1" class="w-4 h-4 text-indigo-600">
+                                    <span class="text-xs font-bold text-slate-500 w-4">B)</span>
+                                    <input type="text" id="prof-alt-1" required placeholder="Distrator B" class="flex-grow p-2 border border-slate-300 rounded-lg text-sm">
+                                </div>
+
+                                <div class="flex items-center space-x-2">
+                                    <input type="radio" name="prof-correta" value="2" class="w-4 h-4 text-indigo-600">
+                                    <span class="text-xs font-bold text-slate-500 w-4">C)</span>
+                                    <input type="text" id="prof-alt-2" required placeholder="Distrator C" class="flex-grow p-2 border border-slate-300 rounded-lg text-sm">
+                                </div>
+
+                                <div class="flex items-center space-x-2">
+                                    <input type="radio" name="prof-correta" value="3" class="w-4 h-4 text-indigo-600">
+                                    <span class="text-xs font-bold text-slate-500 w-4">D)</span>
+                                    <input type="text" id="prof-alt-3" required placeholder="Distrator D" class="flex-grow p-2 border border-slate-300 rounded-lg text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 pt-4 border-t border-slate-200">
+                        <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition shadow">
+                            <i class="fa-solid fa-plus mr-2"></i>Adicionar ao Quiz
+                        </button>
+                        <button type="button" onclick="exportarAtividadeHTML()" class="px-5 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition shadow">
+                            <i class="fa-solid fa-download mr-2"></i>Exportar Atividade em HTML
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let questaoBanco = [
+            {
+                id: 1,
+                contexto: "Lançamento do Coqueteleiro de Açaí",
+                enunciado: "Em uma cooperativa produtora de açaí em Rondônia, o transporte mecânico utiliza um lançador parabólico. A trajetória do fruto é modelada por h(t) = -5t² + 20t + 1, onde h é a altura em metros e t é o tempo em segundos.",
+                pergunta: "Determine em quanto tempo a massa de frutos atinge a altura máxima e qual é essa altura máxima.",
+                a: -5, b: 20, c: 1,
+                alternativas: [
+                    "t = 2 s e Altura Máxima = 21 metros",
+                    "t = 4 s e Altura Máxima = 21 metros",
+                    "t = 2 s e Altura Máxima = 20 metros",
+                    "t = 4 s e Altura Máxima = 1 metro"
+                ],
+                correta: 0,
+                explicacao: "O tempo do vértice é tv = -b/(2a) = 2 s. Substituindo t=2 na função: h(2) = 21 metros."
+            },
+            {
+                id: 2,
+                contexto: "Otimização de Lucro na Piscicultura de Tambaqui",
+                enunciado: "Um produtor no vale do Jamari estimou que o lucro diário L(x) (em centenas de reais) com a venda de ração varia com o preço de venda x (em reais) conforme a equação L(x) = -2x² + 32x - 78.",
+                pergunta: "Para obter o lucro máximo, qual deve ser o preço de venda x por quilo e qual será esse lucro em reais?",
+                a: -2, b: 32, c: -78,
+                alternativas: [
+                    "R$ 8,00 por kg e Lucro Máximo de R$ 5.000,00",
+                    "R$ 8,00 por kg e Lucro Máximo de R$ 50,00",
+                    "R$ 16,00 por kg e Lucro Máximo de R$ 50,00",
+                    "R$ 8,00 por kg e Lucro Máximo de R$ 7.800,00"
+                ],
+                correta: 0,
+                explicacao: "xv = -32 / (2 * -2) = 8 reais/kg. L(8) = 50 centenas de reais = R$ 5.000,00."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let chartInstance = null;
+
+        window.onload = function() {
+            initChart();
+            updateChart();
+            renderQuestion();
+            calcularCalculadoraPedagogica();
+        };
+
+        // Função corrigida para alternância de abas
+        function switchTab(tabName) {
+            const secSimulador = document.getElementById('sec-simulador');
+            const secQuiz = document.getElementById('sec-quiz');
+            const secProfessor = document.getElementById('sec-professor');
+
+            const btnSimulador = document.getElementById('tab-simulador');
+            const btnQuiz = document.getElementById('tab-quiz');
+            const btnProfessor = document.getElementById('tab-professor');
+
+            // Oculta todas as seções
+            secSimulador.style.display = 'none';
+            secQuiz.style.display = 'none';
+            secProfessor.style.display = 'none';
+
+            // Reseta estilo dos botões
+            btnSimulador.className = "px-4 py-2 rounded-md text-sm font-medium transition text-indigo-200 hover:text-white";
+            btnQuiz.className = "px-4 py-2 rounded-md text-sm font-medium transition text-indigo-200 hover:text-white";
+            btnProfessor.className = "px-4 py-2 rounded-md text-sm font-medium transition text-indigo-200 hover:text-white border border-indigo-700";
+
+            // Mostra a aba selecionada
+            if (tabName === 'simulador') {
+                secSimulador.style.display = 'block';
+                btnSimulador.className = "px-4 py-2 rounded-md text-sm font-medium transition nav-btn-active";
+            } else if (tabName === 'quiz') {
+                secQuiz.style.display = 'block';
+                btnQuiz.className = "px-4 py-2 rounded-md text-sm font-medium transition nav-btn-active";
+            } else if (tabName === 'professor') {
+                secProfessor.style.display = 'block';
+                btnProfessor.className = "px-4 py-2 rounded-md text-sm font-medium transition nav-btn-active";
+                calcularCalculadoraPedagogica();
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('parabolaChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'f(x)',
+                            data: [],
+                            borderColor: '#4f46e5',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Vértice (Ponto Notável)',
+                            data: [],
+                            backgroundColor: '#ef4444',
+                            pointRadius: 6,
+                            showLine: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Eixo X' } },
+                        y: { title: { display: true, text: 'Eixo Y' } }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            const a = parseFloat(document.getElementById('slider-a').value);
+            const b = parseFloat(document.getElementById('slider-b').value);
+            const c = parseFloat(document.getElementById('slider-c').value);
+
+            document.getElementById('val-a').innerText = a;
+            document.getElementById('val-b').innerText = b;
+            document.getElementById('val-c').innerText = c;
+            document.getElementById('eq-display').innerText = `f(x) = ${a}x² + (${b})x + (${c})`;
+
+            const xv = a !== 0 ? -b / (2 * a) : 0;
+            const delta = (b * b) - (4 * a * c);
+            const yv = a !== 0 ? -delta / (4 * a) : 0;
+
+            document.getElementById('out-xv').innerText = xv.toFixed(2);
+            document.getElementById('out-yv').innerText = yv.toFixed(2);
+            document.getElementById('out-delta').innerText = delta.toFixed(2);
+
+            const labels = [];
+            const dataF = [];
+            const minX = Math.floor(xv - 5);
+            const maxX = Math.ceil(xv + 5);
+
+            for (let x = minX; x <= maxX; x += 0.5) {
+                labels.push(x.toFixed(1));
+                dataF.push(a * x * x + b * x + c);
+            }
+
+            chartInstance.data.labels = labels;
+            chartInstance.data.datasets[0].data = dataF;
+            chartInstance.data.datasets[1].data = [{ x: xv.toFixed(1), y: yv }];
+            chartInstance.update();
+        }
+
+        function loadPreset(a, b, c) {
+            document.getElementById('slider-a').value = a;
+            document.getElementById('slider-b').value = b;
+            document.getElementById('slider-c').value = c;
+            updateChart();
+        }
+
+        function renderQuestion() {
+            const q = questaoBanco[currentQuestionIndex];
+            const card = document.getElementById('question-card');
+
+            card.innerHTML = `
+                <div class="bg-indigo-50 border-l-4 border-indigo-600 p-4 rounded-r-lg">
+                    <span class="text-xs font-bold text-indigo-800 uppercase tracking-wide">Questão ${currentQuestionIndex + 1} de ${questaoBanco.length} — ${q.contexto}</span>
+                    <p class="text-sm text-slate-800 mt-2 font-medium">${q.enunciado}</p>
+                    <p class="text-sm font-bold text-indigo-950 mt-3">${q.pergunta}</p>
+                </div>
+
+                <div class="space-y-3">
+                    ${q.alternativas.map((alt, idx) => `
+                        <button type="button" onclick="checkAnswer(${idx})" class="w-full text-left p-3.5 border border-slate-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50/50 transition flex items-center justify-between group">
+                            <span class="text-sm text-slate-700 font-medium group-hover:text-indigo-900">${String.fromCharCode(65 + idx)}) ${alt}</span>
+                            <i class="fa-regular fa-circle text-slate-300 group-hover:text-indigo-500"></i>
+                        </button>
+                    `).join('')}
+                </div>
+
+                <div class="flex justify-between items-center pt-4 border-t border-slate-200">
+                    <button type="button" onclick="testInSimulator(${q.a}, ${q.b}, ${q.c})" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center">
+                        <i class="fa-solid fa-chart-line mr-1"></i>Testar este cenário no Simulador
+                    </button>
+                </div>
+            `;
+        }
+
+        function checkAnswer(selectedIdx) {
+            const q = questaoBanco[currentQuestionIndex];
+            const card = document.getElementById('question-card');
+            const isCorrect = selectedIdx === q.correta;
+
+            if (isCorrect) score += 100;
+            document.getElementById('quiz-score').innerText = `${score} pts`;
+
+            card.innerHTML += `
+                <div class="p-4 rounded-lg mt-4 ${isCorrect ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-rose-50 border border-rose-200 text-rose-900'}">
+                    <div class="flex items-center space-x-2 font-bold mb-1">
+                        <i class="fa-solid ${isCorrect ? 'fa-circle-check text-emerald-600' : 'fa-circle-xmark text-rose-600'} text-lg"></i>
+                        <span>${isCorrect ? 'Excelente! Resposta Correta.' : 'Ops! Resposta Incorreta.'}</span>
+                    </div>
+                    <p class="text-xs mt-1 leading-relaxed">${q.explicacao}</p>
+                </div>
+                <div class="flex justify-end mt-4">
+                    <button type="button" onclick="nextQuestion()" class="px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition">
+                        Próxima Questão <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            `;
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex = (currentQuestionIndex + 1) % questaoBanco.length;
+            renderQuestion();
+        }
+
+        function testInSimulator(a, b, c) {
+            loadPreset(a, b, c);
+            switchTab('simulador');
+        }
+
+        function calcularCalculadoraPedagogica() {
+            const a = parseFloat(document.getElementById('prof-a').value) || 0;
+            const b = parseFloat(document.getElementById('prof-b').value) || 0;
+            const c = parseFloat(document.getElementById('prof-c').value) || 0;
+
+            const xv = a !== 0 ? -b / (2 * a) : 0;
+            const delta = (b * b) - (4 * a * c);
+            const yv = a !== 0 ? -delta / (4 * a) : 0;
+
+            document.getElementById('prof-calc-xv').innerText = xv.toFixed(2);
+            document.getElementById('prof-calc-yv').innerText = yv.toFixed(2);
+        }
+
+        function salvarQuestaoProfessor(e) {
+            e.preventDefault();
+            const a = parseFloat(document.getElementById('prof-a').value);
+            const b = parseFloat(document.getElementById('prof-b').value);
+            const c = parseFloat(document.getElementById('prof-c').value);
+
+            const novaQ = {
+                id: questaoBanco.length + 1,
+                contexto: document.getElementById('prof-contexto').value,
+                enunciado: document.getElementById('prof-enunciado').value,
+                pergunta: document.getElementById('prof-pergunta').value,
+                a: a, b: b, c: c,
+                alternativas: [
+                    document.getElementById('prof-alt-0').value,
+                    document.getElementById('prof-alt-1').value,
+                    document.getElementById('prof-alt-2').value,
+                    document.getElementById('prof-alt-3').value
+                ],
+                correta: parseInt(document.querySelector('input[name="prof-correta"]:checked').value),
+                explicacao: `Resolução Calculada: Xv = ${(-b/(2*a)).toFixed(2)}, Yv = ${(-((b*b)-(4*a*c))/(4*a)).toFixed(2)}.`
+            };
+
+            questaoBanco.push(novaQ);
+            alert("Questão adicionada com sucesso ao Quiz!");
+            switchTab('quiz');
+            currentQuestionIndex = questaoBanco.length - 1;
+            renderQuestion();
+        }
+
+        function exportarAtividadeHTML() {
+            const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'atividade_h24_saero_personalizada.html';
+            a.click();
+        }
+    </script>
+</body>
+</html>
